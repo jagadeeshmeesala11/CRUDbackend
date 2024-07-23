@@ -28,6 +28,30 @@ const registerUser  = async (req,res) => {
   }
 }
 
+const loginUser = async (req,res) => {
+  const {username,password} = req.body;
+  try{
+    const findUser = await User.findOne({username});
+  if(!findUser){
+    return res.status(404).json({message:"User NOt Found"});
+  }
+
+  const hashedPassword = await bcrypt.compare(password,findUser.password);
+  if(!hashedPassword){
+    return res.status(401).json({error:"Invalid Password"});
+  }
+
+  const jwtToken = await jwt.sign({username},process.env.JWT_KEY,{expiresIn:"1h"})
+
+  return res.status(200).json({
+    message: "Login successfully",
+    token: jwtToken
+  });
+  }catch(e){
+    return res.status(500).json({error:e.message});
+  }
+}
+
 const getAllUsers = async (req,res) => {
     try{
         const getUsers = await User.find().select("-password");
@@ -39,53 +63,50 @@ const getAllUsers = async (req,res) => {
 }
 
 
-const getByid = async (req,res) => {
-    const {id} = req.params;
-    try{
-        const findUser = await User.findById(id).select("-password");
-    if(!findUser){
-        return res.status(401).json("User NOt found");
+const getByid = async (req, res) => {
+    const { id } = req.params;
+    try {
+      const findUser = await User.findById(id).select("-password");
+      if (!findUser) {
+        return res.status(404).json("User not found"); // 404 Not Found
+      }
+      return res.status(200).json(findUser);
+    } catch (e) {
+      return res.status(500).json({ message: "Server error" });
     }
-    return res.status(201).json(findUser)
-    }catch(e){
-        return res.status(500).json(e)
+  }
+
+
+const DeleteUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+      const deleteById = await User.findByIdAndDelete(id);
+      if (!deleteById) {
+        return res.status(404).json({ message: "User not found" }); // 404 Not Found
+      }
+      return res.status(200).json({ message: "User deleted" });
+    } catch (e) {
+      return res.status(500).json({ message: "Server error" });
     }
-}
+  }
 
-const DeleteUser = async (req,res) => {
-    const {id} = req.params;
-    try{
-        const deletebyid = await User.findByIdAndDelete(id);
-        if(!deletebyid){
-            return res.status(401).json({message:"User Not Fount"})
-        }
-        return res.status(201).json({message:"User Deleted"})
+const updateUser = async (req, res) => {
+    const { id } = req.params;
+    const { firstname, lastname, username } = req.body;
+    try {
+      const updateDetails = await User.findByIdAndUpdate(id, {
+        firstname,
+        lastname,
+        username
+      }, { new: true, runValidators: true }).select("-password");
+  
+      if (!updateDetails) {
+        return res.status(404).json({ message: "User not found" }); // 404 Not Found
+      }
+  
+      return res.status(200).json(updateDetails);
+    } catch (e) {
+      return res.status(500).json({ message: "Server error" });
     }
-    catch(e){
-        return res.status(500).json(e)
-    }
-
-}
-
-const UpdateUser = async (req,res) => {
-    const {id} = req.params;
-    const { firstname, lastname, username } = req.body
-    try{
-        const updateDetails = await User.findByIdAndUpdate(id,{
-            firstname,
-            lastname,
-            username
-        },{ new: true, runValidators: true }).select("-password");
-
-        if(!updateDetails){
-            return res.status(401).json({message:"User Not Fount"})
-        }
-
-        return  res.status(200).json(updateDetails)
-    }
-    catch(e){
-        return res.status(500).json({ message: "Server error", error: e.message });
-    }
-}
-
-module.exports = { registerUser,getAllUsers,getByid,DeleteUser};
+  }
+module.exports = { registerUser,getAllUsers,getByid,DeleteUser,updateUser,loginUser};
