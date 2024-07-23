@@ -3,7 +3,7 @@ const { findById, findByIdAndUpdate } = require("../models/userModel.js");
 
 const getTasks = async (req,res) => {
    try{
-    const getAllTasks = await Task.find();
+    const getAllTasks = await Task.find({user: req.user._id});
     return res.status(200).json({data:getAllTasks})
     
    }catch(e){
@@ -14,7 +14,7 @@ const getTasks = async (req,res) => {
 const CreateTask = async (req,res) => {
     try{
         const {title,completed} = req.body;
-    const createNewTask = new Task({title,completed});
+    const createNewTask = new Task({title,completed,user: req.user._id});
     await createNewTask.save();
     return res.status(200).json({message:"Task Created"})
     }
@@ -27,7 +27,7 @@ const updateTask = async (req,res) => {
     const {id} = req.params;
     const {title,completed} = req.body;
     try{
-        const findTask = await Task.findByIdAndUpdate(id,{
+        const findTask = await Task.findByIdAndUpdate({_id:id,user: req.user._id},{
             title,
             completed
         },{ new: true, runValidators: true });
