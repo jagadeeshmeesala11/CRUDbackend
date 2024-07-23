@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const userRouter = require("./routers/userRouter.js")
+const taskRouter = require("./routers/TaskRouter.js")
 const dotenv = require('dotenv')
 dotenv.config();
 
@@ -30,3 +31,4 @@ app.listen(port, () => {
 });
 
 app.use('/users',userRouter);
+app.use('/tasks',taskRouter);
