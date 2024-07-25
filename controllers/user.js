@@ -41,7 +41,7 @@ const loginUser = async (req,res) => {
     return res.status(401).json({error:"Invalid Password"});
   }
 
-  const jwtToken = await jwt.sign({username},process.env.JWT_KEY,{expiresIn:"1h"})
+  const jwtToken = jwt.sign({ userId: findUser._id }, process.env.JWT_KEY, { expiresIn: "1h" });
 
   return res.status(200).json({
     message: "Login successfully",
@@ -77,7 +77,7 @@ const getByid = async (req, res) => {
   }
 
 
-const DeleteUser = async (req, res) => {
+const deleteUser = async (req, res) => {
     const { id } = req.params;
     try {
       const deleteById = await User.findByIdAndDelete(id);
@@ -109,4 +109,4 @@ const updateUser = async (req, res) => {
       return res.status(500).json({ message: "Server error" });
     }
   }
-module.exports = { registerUser,getAllUsers,getByid,DeleteUser,updateUser,loginUser};
+module.exports = { registerUser,getAllUsers,getByid,deleteUser,updateUser,loginUser};

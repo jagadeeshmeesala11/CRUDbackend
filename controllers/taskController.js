@@ -1,5 +1,4 @@
 const Task = require("../models/taskModel.js");
-const { findById, findByIdAndUpdate } = require("../models/userModel.js");
 
 const getTasks = async (req,res) => {
    try{
@@ -11,17 +10,35 @@ const getTasks = async (req,res) => {
    }
 }
 
-const CreateTask = async (req,res) => {
-    try{
-        const {title,completed} = req.body;
-    const createNewTask = new Task({title,completed,user: req.user._id});
-    await createNewTask.save();
-    return res.status(200).json({message:"Task Created"})
+const CreateTask = async (req, res) => {
+    try {
+      const { title, completed } = req.body;
+  
+      
+      console.log('req.user:', req.user);
+  
+    
+      if (!req.user || !req.user._id) {
+        return res.status(400).json({ message: 'User ID is missing' });
+      }
+  
+     
+      const createNewTask = new Task({
+        title,
+        completed,
+        user: req.user._id, 
+      });
+  
+     
+      await createNewTask.save();
+  
+      return res.status(201).json({ message: 'Task Created' });
+    } catch (e) {
+      // Return an error response if something goes wrong
+      return res.status(500).json({ error: e.message });
     }
-    catch(e){
-        return res.status(500).json({error:e.message});
-    }
-}
+  };
+  
 
 const updateTask = async (req,res) => {
     const {id} = req.params;
